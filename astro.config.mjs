@@ -26,8 +26,11 @@ import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-cop
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://fuwari.vercel.app/",
-	base: "/",
+	// 支持从环境变量读取 site URL，如果没有则使用默认值
+	// 对于 GitHub Pages: https://<username>.github.io/<repository>/
+	// 对于自定义域名: https://yourdomain.com/
+	site: process.env.SITE_URL || "https://fuwari.vercel.app/",
+	base: process.env.BASE_PATH || "/",
 	trailingSlash: "always",
 	integrations: [
 		tailwind({
