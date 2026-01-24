@@ -53,11 +53,15 @@ const mainPanelTop = siteConfig.banner.enable
 
 <!-- Banner -->
 {siteConfig.banner.enable && <div id="banner-wrapper" class={`fixed z-0 w-full h-full transition duration-700`} style={`top: 0; left: 0; right: 0; bottom: 0;`}>
-    <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 z-0 pointer-events-none"></div>
-    <ImageWrapper id="banner" alt="Banner image of the blog" class:list={["h-full w-full transition duration-700 opacity-0 scale-105 relative z-0 pointer-events-none"]}
+    <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 dark:from-black/20 dark:via-transparent dark:to-black/40 z-0 pointer-events-none"></div>
+    <ImageWrapper id="banner" alt="Banner image of the blog" class:list={["h-full w-full transition duration-700 scale-105 relative z-0 pointer-events-none"]}
                   src={siteConfig.banner.src} position={siteConfig.banner.position}
     >
     </ImageWrapper>
+    {siteConfig.banner.lightSrc && <ImageWrapper id="banner-light" alt="Banner image of the blog (light mode)" class:list={["h-full w-full transition duration-700 scale-105 relative z-[1] pointer-events-none"]}
+                  src={siteConfig.banner.lightSrc} position={siteConfig.banner.position}
+    >
+    </ImageWrapper>}
 </div>}
 
 <!-- Main content -->

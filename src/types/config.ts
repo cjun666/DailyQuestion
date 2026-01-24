@@ -23,6 +23,7 @@ export type SiteConfig = {
 	banner: {
 		enable: boolean;
 		src: string;
+		lightSrc?: string; // 浅色主题背景图
 		position?: "top" | "center" | "bottom";
 		credit: {
 			enable: boolean;

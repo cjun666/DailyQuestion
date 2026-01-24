@@ -20,7 +20,7 @@ let links: NavBarLink[] = navBarConfig.links.map(
 	},
 );
 ---
-<div id="navbar" class="z-50 onload-animation">
+<div id="navbar" class="z-50 onload-animation" style="z-index: 10000 !important; position: relative;">
     <div class="absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition"></div> <!-- used for onload animation -->
     <div class:list={[
         className,
@@ -44,14 +44,17 @@ let links: NavBarLink[] = navBarConfig.links.map(
             })}
         </div>
         <div class="flex">
-            <!--<SearchPanel client:load>-->
             <Search client:only="svelte"></Search>
+            
             {!siteConfig.themeColor.fixed && (
-                    <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
-                        <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
-                    </button>
+                <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
+                    <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
+                </button>
             )}
-            <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
+        
+            <!-- @ts-expect-error - client:load is an Astro directive, not a component prop -->
+            <LightDarkSwitch client:load></LightDarkSwitch>
+        
             <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
                 <Icon name="material-symbols:menu-rounded" class="text-[1.25rem]"></Icon>
             </button>
@@ -62,23 +65,63 @@ let links: NavBarLink[] = navBarConfig.links.map(
 </div>
 
 <script>
-function switchTheme() {
-    if (localStorage.theme === 'dark') {
-        document.documentElement.classList.remove('dark');
-        localStorage.theme = 'light';
-    } else {
-        document.documentElement.classList.add('dark');
-        localStorage.theme = 'dark';
-    }
-}
+// 注意：主题切换现在由 LightDarkSwitch.svelte 组件处理，不需要这里的脚本
+// 只保留其他按钮的事件处理
 
 function loadButtonScript() {
-    let switchBtn = document.getElementById("scheme-switch");
-    if (switchBtn) {
-        switchBtn.onclick = function () {
-            switchTheme()
-        };
-    }
+    console.log('🟠 Navbar.astro: loadButtonScript called');
+    
+    // 主题切换按钮现在由 Svelte 组件处理，不再需要这里的备用方案
+    // 只保留全局点击监听器作为最后的保障（用于处理按钮被覆盖的情况）
+    
+    // 不再需要 MutationObserver，按钮已经可以正常工作
+    
+    // 全局点击监听器作为最后的保障（仅在按钮被覆盖时使用）
+    // 注意：不要阻止事件传播，让 Svelte 的原生事件处理器也能工作
+    const globalClickHandler = function(e: MouseEvent) {
+        const target = e.target as HTMLElement;
+        if (!target) return;
+        
+        // 检查点击位置是否在按钮区域内，但按钮被覆盖
+        const button = document.getElementById('scheme-switch') as HTMLElement;
+        if (button) {
+            const rect = button.getBoundingClientRect();
+            const clickX = e.clientX;
+            const clickY = e.clientY;
+            const isInButtonArea = clickX >= rect.left && clickX <= rect.right && 
+                                   clickY >= rect.top && clickY <= rect.bottom;
+            
+            // 检查按钮是否被覆盖
+            const elementAtPoint = document.elementFromPoint(clickX, clickY);
+            const isButtonCovered = elementAtPoint !== button && !button.contains(elementAtPoint);
+            
+            // 只有在按钮被覆盖时才处理
+            if (isInButtonArea && isButtonCovered) {
+                console.log('🟠🟠🟠 GLOBAL CLICK HANDLER: Button is covered, handling click!');
+                
+                // 直接切换主题（只在 light 和 dark 之间切换）
+                const currentTheme = localStorage.getItem('theme') || 'light';
+                const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                console.log('🟠 Global handler: Switching from', currentTheme, 'to', nextTheme);
+                
+                localStorage.setItem('theme', nextTheme);
+                const html = document.documentElement;
+                if (nextTheme === 'light') {
+                    html.classList.remove('dark');
+                } else {
+                    html.classList.add('dark');
+                }
+                
+                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: nextTheme } }));
+            }
+        }
+    };
+    
+    // 只在捕获阶段添加，不阻止事件传播
+    document.addEventListener('click', globalClickHandler, { capture: true, passive: true });
+    
+    // 主题切换按钮现在由 Svelte 组件处理，不需要额外的设置
 
     let settingBtn = document.getElementById("display-settings-switch");
     if (settingBtn) {
@@ -101,7 +144,17 @@ function loadButtonScript() {
     }
 }
 
-loadButtonScript();
+// 确保在 DOM 加载后执行
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadButtonScript);
+} else {
+    loadButtonScript();
+}
+
+// 页面切换后重新执行（Astro View Transitions）
+document.addEventListener('astro:after-swap', () => {
+    setTimeout(loadButtonScript, 100);
+});
 </script>
 
 {import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>

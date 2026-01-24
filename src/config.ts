@@ -17,7 +17,8 @@ export const siteConfig: SiteConfig = {
 	},
 	banner: {
 		enable: true,
-		src: "assets/images/demo-avatar.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+		src: "assets/images/demo-avatar.png", // 暗色主题背景图
+		lightSrc: "assets/images/demo-avatar-light.png", // 浅色主题背景图
 		position: "center", // Equivalent to object-position, only supports 'top', 'center', 'bottom'. 'center' by default
 		credit: {
 			enable: false, // Display the credit text of the banner image

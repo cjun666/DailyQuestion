@@ -153,6 +153,7 @@ const bannerOffset =
 		  data-overlayscrollbars-initialize
 	>
 		<ConfigCarrier></ConfigCarrier>
+		<!-- @ts-expect-error - client:load is an Astro directive, not a component prop -->
 		<CandyRain client:load />
 		<slot />
 
@@ -181,6 +182,13 @@ const bannerOffset =
 	.enable-banner #banner {
 		@apply h-full w-full
 	}
+	
+	/* 浅色背景图：默认隐藏，浅色主题时显示 */
+	.enable-banner #banner-light {
+		@apply h-full w-full
+	}
+	
+	/* 背景图的显示/隐藏完全由 JavaScript 控制，不在这里设置 CSS */
 	.enable-banner.is-home #main-grid {
 		@apply translate-y-0;
 	}
@@ -204,7 +212,7 @@ import {
 	// SizeObserverPlugin,
 	// ClickScrollPlugin
 } from 'overlayscrollbars';
-import {getHue, getStoredTheme, setHue, setTheme} from "../utils/setting-utils";
+import {getHue, getStoredTheme, setHue, setTheme, updateBannerForTheme} from "../utils/setting-utils";
 import {pathsEqual, url} from "../utils/url-utils";
 import {
 	BANNER_HEIGHT,
@@ -357,12 +365,22 @@ function showBanner() {
 	if (!siteConfig.banner.enable) return;
 
 	const banner = document.getElementById('banner');
+	const bannerLight = document.getElementById('banner-light');
+	
 	if (!banner) {
-		console.error('Banner element not found');
+		// 如果元素还没加载，延迟执行
+		setTimeout(showBanner, 100);
 		return;
 	}
 
-	banner.classList.remove('opacity-0', 'scale-105');
+	// 只移除 scale-105，opacity 由 updateBannerForTheme 控制
+	banner.classList.remove('scale-105');
+	if (bannerLight) {
+		bannerLight.classList.remove('scale-105');
+	}
+	
+	// 使用统一的函数来更新背景图
+	updateBannerForTheme();
 }
 
 function init() {
@@ -406,7 +424,11 @@ const setup = () => {
 			navbar.classList.add('navbar-hidden')
 		}
 	})
-	window.swup.hooks.on('content:replace', initCustomScrollbar)
+	window.swup.hooks.on('content:replace', () => {
+		initCustomScrollbar();
+		// 页面切换后更新背景图
+		updateBannerForTheme();
+	})
 	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
 		// change banner height immediately when a link is clicked
 		const bodyElement = document.querySelector('body')

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
 	import type { CollectionEntry } from "astro:content";
+	import { onMount } from "svelte";
 
 	interface Props {
 		question: CollectionEntry<"daily-questions">;
@@ -12,11 +13,35 @@
 	let selectedAnswer: number | null = $state(null);
 	let submitted = $state(false);
 	let isCorrect = $state(false);
+	let isDarkMode = $state(false);
 
 	const choices = question.data.choices;
 	// 确保 correct 是数字类型
 	const correct = Number(question.data.correct);
 	const optionLabels = ["A", "B", "C", "D"];
+
+	// 检测主题模式
+	onMount(() => {
+		const checkTheme = () => {
+			isDarkMode = document.documentElement.classList.contains('dark');
+		};
+		checkTheme();
+		
+		// 监听主题变化
+		const observer = new MutationObserver(checkTheme);
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class']
+		});
+		
+		// 也监听主题变更事件
+		window.addEventListener('theme-changed', checkTheme);
+		
+		return () => {
+			observer.disconnect();
+			window.removeEventListener('theme-changed', checkTheme);
+		};
+	});
 
 	function selectAnswer(index: number) {
 		if (submitted) return;
@@ -44,47 +69,82 @@
 	<!-- 选项 -->
 	<div class="flex flex-col gap-3 mb-6">
 		{#each choices as choice, index}
-			<div class="flex items-start gap-3">
+			<button
+				type="button"
+				onclick={() => selectAnswer(index)}
+				disabled={submitted}
+				class="group relative flex items-start gap-3 p-4 rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed overflow-hidden"
+				style={selectedAnswer !== null && selectedAnswer === index && !submitted
+					? "border: 3px solid var(--primary);"
+					: (selectedAnswer === null || selectedAnswer !== index) && !submitted
+					? "border: 2px solid transparent;"
+					: ""}
+				class:list={[
+					{
+						// 未选中状态
+						"bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 shadow-sm":
+							(selectedAnswer === null || selectedAnswer !== index) && !submitted,
+						// 选中但未提交：蓝色框框包裹 + 高亮+突起效果
+						"bg-gradient-to-br from-[var(--primary)]/20 to-[var(--primary)]/10 dark:from-[var(--primary)]/30 dark:to-[var(--primary)]/20 shadow-2xl -translate-y-1 ring-4 ring-[var(--primary)]/30":
+							selectedAnswer !== null && selectedAnswer === index && !submitted,
+						// 提交后：正确答案
+						"bg-green-500/10 dark:bg-green-500/20 border-2 border-green-500 shadow-lg":
+							submitted && index === Number(correct),
+						// 提交后：选错的答案
+						"bg-red-500/10 dark:bg-red-500/20 border-2 border-red-500 shadow-lg":
+							submitted &&
+								selectedAnswer !== null &&
+								selectedAnswer === index &&
+								index !== Number(correct),
+						// 提交后：未选中的错误选项
+						"bg-black/5 dark:bg-white/5 opacity-50 shadow-sm":
+							submitted && (selectedAnswer === null || selectedAnswer !== index) && index !== Number(correct),
+					},
+				]}
+			>
+				<!-- 选中时的光效和装饰 -->
+				{#if selectedAnswer !== null && selectedAnswer === index && !submitted}
+					<!-- 背景光效 -->
+					<div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-[var(--primary)]/20 to-transparent -translate-x-full group-hover:translate-x-full"></div>
+					<!-- 顶部高光 -->
+					<div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--primary)]/60 to-transparent"></div>
+				{/if}
 				<!-- ABCD 小按钮 -->
-				<button
-					type="button"
-					onclick={() => selectAnswer(index)}
-					disabled={submitted}
+				<div
 					class:list={[
-						"flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-200",
-						"hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50",
+						"flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-base transition-all duration-300 shadow-lg relative z-10",
 						{
-							// 未选中状态：深色背景 + 白色文字
-							"bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10":
+							// 未选中状态：柔和的背景色，文字使用主题色
+							"bg-[var(--btn-regular-bg)] dark:bg-[var(--btn-regular-bg)] border-2":
 								(selectedAnswer === null || selectedAnswer !== index) && !submitted,
-							// 选中但未提交：浅色背景 + 蓝色文字（主题色）
-							"bg-white dark:bg-[var(--btn-regular-bg)] border-2":
+							// 选中但未提交：主题色背景 + 突起效果
+							"bg-[var(--primary)] text-white border-2 border-[var(--primary)] shadow-2xl -translate-y-0.5 scale-110":
 								selectedAnswer !== null && selectedAnswer === index && !submitted,
 							// 提交后：正确答案
-							"bg-green-500 text-white border-2 border-green-500":
+							"bg-green-500 text-white border-2 border-green-500 shadow-xl":
 								submitted && index === Number(correct),
 							// 提交后：选错的答案
-							"bg-red-500 text-white border-2 border-red-500":
+							"bg-red-500 text-white border-2 border-red-500 shadow-xl":
 								submitted &&
 									selectedAnswer !== null &&
 									selectedAnswer === index &&
 									index !== Number(correct),
 							// 提交后：未选中的错误选项
-							"bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 opacity-50":
+							"bg-[var(--btn-regular-bg)] dark:bg-[var(--btn-regular-bg)] opacity-50 border-2":
 								submitted && (selectedAnswer === null || selectedAnswer !== index) && index !== Number(correct),
 						},
 					]}
 					style={(selectedAnswer === null || selectedAnswer !== index) && !submitted
-						? "color: white !important;"
-						: selectedAnswer !== null && selectedAnswer === index && !submitted
-						? "color: var(--primary) !important; border-color: var(--primary) !important;"
+						? "color: var(--primary); border-color: var(--primary);"
+						: submitted && (selectedAnswer === null || selectedAnswer !== index) && index !== Number(correct)
+						? "color: var(--primary); border-color: var(--primary); opacity: 0.5;"
 						: ""}
 				>
 					{optionLabels[index]}
-				</button>
+				</div>
 				
 				<!-- 选项文本 -->
-				<div class="flex-1 flex items-center gap-3 min-h-[2rem]">
+				<div class="flex-1 flex items-center gap-3 min-h-[2.5rem] relative z-10">
 					<div class="flex-1 text-75 text-base leading-relaxed">{choice}</div>
 					{#if submitted && index === Number(correct)}
 						<Icon
@@ -102,7 +162,7 @@
 						/>
 					{/if}
 				</div>
-			</div>
+			</button>
 		{/each}
 	</div>
 
@@ -112,12 +172,19 @@
 			type="button"
 			onclick={submitAnswer}
 			disabled={selectedAnswer === null}
-			class:list={[
-				"btn-regular rounded-xl font-medium transition px-6 py-3",
-				"disabled:opacity-50 disabled:cursor-not-allowed",
-			]}
+			class="group relative flex items-center justify-center gap-2 rounded-2xl font-semibold transition-all duration-300 px-8 py-3.5 shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+			style={isDarkMode
+				? "background: white; color: black; box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);"
+				: "background: black; color: white; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);"}
 		>
-			提交答案
+			<!-- 背景光效 -->
+			<div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full"></div>
+			
+			<Icon
+				icon="material-symbols:send-rounded"
+				class="text-xl transition-transform duration-300 group-hover:translate-x-1 group-hover:rotate-12 relative z-10"
+			/>
+			<span class="relative z-10">提交答案</span>
 		</button>
 	{/if}
 
