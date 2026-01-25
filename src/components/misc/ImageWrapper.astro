@@ -41,7 +41,9 @@ if (isLocal) {
 			`\n[ERROR] Image file not found: ${normalizedPath.replace("../../", "src/")}`,
 		);
 		console.error(`Please check if the image exists at: src/${src}`);
-		console.error(`If the image is in /public folder, use path starting with '/' like: /your-image.png`);
+		console.error(
+			`If the image is in /public folder, use path starting with '/' like: /your-image.png`,
+		);
 	} else {
 		try {
 			img = await file();

@@ -1,68 +1,68 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
-	import type { CollectionEntry } from "astro:content";
-	import { onMount } from "svelte";
+import type { CollectionEntry } from "astro:content";
+import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
 
-	interface Props {
-		question: CollectionEntry<"daily-questions">;
-		explanationId?: string;
-	}
+interface Props {
+	question: CollectionEntry<"daily-questions">;
+	explanationId?: string;
+}
 
-	let { question, explanationId = "daily-explanation" }: Props = $props();
+let { question, explanationId = "daily-explanation" }: Props = $props();
 
-	let selectedAnswer: number | null = $state(null);
-	let submitted = $state(false);
-	let isCorrect = $state(false);
-	let isDarkMode = $state(false);
+let selectedAnswer: number | null = $state(null);
+let submitted = $state(false);
+let isCorrect = $state(false);
+let isDarkMode = $state(false);
 
-	const choices = question.data.choices;
-	// 确保 correct 是数字类型
-	const correct = Number(question.data.correct);
-	const optionLabels = ["A", "B", "C", "D"];
+const choices = question.data.choices;
+// 确保 correct 是数字类型
+const correct = Number(question.data.correct);
+const optionLabels = ["A", "B", "C", "D"];
 
-	// 检测主题模式
-	onMount(() => {
-		const checkTheme = () => {
-			isDarkMode = document.documentElement.classList.contains('dark');
-		};
-		checkTheme();
-		
-		// 监听主题变化
-		const observer = new MutationObserver(checkTheme);
-		observer.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ['class']
-		});
-		
-		// 也监听主题变更事件
-		window.addEventListener('theme-changed', checkTheme);
-		
-		return () => {
-			observer.disconnect();
-			window.removeEventListener('theme-changed', checkTheme);
-		};
+// 检测主题模式
+onMount(() => {
+	const checkTheme = () => {
+		isDarkMode = document.documentElement.classList.contains("dark");
+	};
+	checkTheme();
+
+	// 监听主题变化
+	const observer = new MutationObserver(checkTheme);
+	observer.observe(document.documentElement, {
+		attributes: true,
+		attributeFilter: ["class"],
 	});
 
-	function selectAnswer(index: number) {
-		if (submitted) return;
-		selectedAnswer = Number(index);
-	}
+	// 也监听主题变更事件
+	window.addEventListener("theme-changed", checkTheme);
 
-	function revealExplanation() {
-		const el = document.getElementById(explanationId);
-		if (el) {
-			el.classList.remove("hidden");
-			el.scrollIntoView({ behavior: "smooth", block: "start" });
-		}
-	}
+	return () => {
+		observer.disconnect();
+		window.removeEventListener("theme-changed", checkTheme);
+	};
+});
 
-	function submitAnswer() {
-		if (selectedAnswer === null) return;
-		// 在提交时立即计算是否正确
-		isCorrect = Number(selectedAnswer) === Number(correct);
-		submitted = true;
-		revealExplanation();
+function selectAnswer(index: number) {
+	if (submitted) return;
+	selectedAnswer = Number(index);
+}
+
+function revealExplanation() {
+	const el = document.getElementById(explanationId);
+	if (el) {
+		el.classList.remove("hidden");
+		el.scrollIntoView({ behavior: "smooth", block: "start" });
 	}
+}
+
+function submitAnswer() {
+	if (selectedAnswer === null) return;
+	// 在提交时立即计算是否正确
+	isCorrect = Number(selectedAnswer) === Number(correct);
+	submitted = true;
+	revealExplanation();
+}
 </script>
 
 <div class="w-full">

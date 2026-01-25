@@ -1,80 +1,81 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+import { onMount } from "svelte";
 
-	interface Candy {
-		id: number;
-		x: number;
-		y: number;
-		endX: number;
-		endY: number;
-		rotation: number;
-		delay: number;
-		duration: number;
-		scale: number;
-		emoji: string;
+interface Candy {
+	id: number;
+	x: number;
+	y: number;
+	endX: number;
+	endY: number;
+	rotation: number;
+	delay: number;
+	duration: number;
+	scale: number;
+	emoji: string;
+}
+
+let candies = $state<Candy[]>([]);
+let candyId = $state(0);
+
+const emojis = ["🍭", "🍬", "🍫", "🍪", "🍰", "🧁", "🍩", "🍯"];
+
+function createCandies(x: number, y: number) {
+	const count = 10 + Math.floor(Math.random() * 6); // 10-15 个棒棒糖
+	const newCandies: Candy[] = [];
+
+	for (let i = 0; i < count; i++) {
+		const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.8;
+		const velocity = 200 + Math.random() * 150; // 初始速度
+		const duration = 1.2 + Math.random() * 0.6;
+
+		// 计算最终位置（考虑重力和初始速度）
+		const endX = x + Math.cos(angle) * velocity * duration;
+		const endY =
+			y + Math.sin(angle) * velocity * duration + window.innerHeight * 0.8;
+
+		newCandies.push({
+			id: candyId++,
+			x: x,
+			y: y,
+			endX: endX,
+			endY: endY,
+			rotation: Math.random() * 360,
+			delay: Math.random() * 0.1,
+			duration: duration,
+			scale: 0.7 + Math.random() * 0.5,
+			emoji: emojis[Math.floor(Math.random() * emojis.length)],
+		});
 	}
 
-	let candies = $state<Candy[]>([]);
-	let candyId = $state(0);
+	candies = [...candies, ...newCandies];
 
-	const emojis = ["🍭", "🍬", "🍫", "🍪", "🍰", "🧁", "🍩", "🍯"];
+	// 清理过期的棒棒糖
+	setTimeout(() => {
+		candies = candies.filter((c) => !newCandies.includes(c));
+	}, 3000);
+}
 
-	function createCandies(x: number, y: number) {
-		const count = 10 + Math.floor(Math.random() * 6); // 10-15 个棒棒糖
-		const newCandies: Candy[] = [];
-
-		for (let i = 0; i < count; i++) {
-			const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.8;
-			const velocity = 200 + Math.random() * 150; // 初始速度
-			const duration = 1.2 + Math.random() * 0.6;
-			
-			// 计算最终位置（考虑重力和初始速度）
-			const endX = x + Math.cos(angle) * velocity * duration;
-			const endY = y + Math.sin(angle) * velocity * duration + window.innerHeight * 0.8;
-
-			newCandies.push({
-				id: candyId++,
-				x: x,
-				y: y,
-				endX: endX,
-				endY: endY,
-				rotation: Math.random() * 360,
-				delay: Math.random() * 0.1,
-				duration: duration,
-				scale: 0.7 + Math.random() * 0.5,
-				emoji: emojis[Math.floor(Math.random() * emojis.length)],
-			});
-		}
-
-		candies = [...candies, ...newCandies];
-
-		// 清理过期的棒棒糖
-		setTimeout(() => {
-			candies = candies.filter((c) => !newCandies.includes(c));
-		}, 3000);
+function handleClick(event: MouseEvent) {
+	// 排除按钮和链接点击
+	const target = event.target as HTMLElement;
+	if (
+		target.tagName === "BUTTON" ||
+		target.tagName === "A" ||
+		target.closest("button") ||
+		target.closest("a")
+	) {
+		return;
 	}
 
-	function handleClick(event: MouseEvent) {
-		// 排除按钮和链接点击
-		const target = event.target as HTMLElement;
-		if (
-			target.tagName === "BUTTON" ||
-			target.tagName === "A" ||
-			target.closest("button") ||
-			target.closest("a")
-		) {
-			return;
-		}
+	createCandies(event.clientX, event.clientY);
+}
 
-		createCandies(event.clientX, event.clientY);
-	}
-
-	onMount(() => {
-		document.addEventListener("click", handleClick);
-		return () => {
-			document.removeEventListener("click", handleClick);
-		};
-	});
+onMount(() => {
+	document.addEventListener("click", handleClick);
+	return () => {
+		document.removeEventListener("click", handleClick);
+	};
+});
 </script>
 
 <div class="candy-container">

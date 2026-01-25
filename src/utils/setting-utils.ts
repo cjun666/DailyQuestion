@@ -58,50 +58,50 @@ export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
 }
 
 export function updateBannerForTheme() {
-	const banner = document.getElementById('banner');
-	const bannerLight = document.getElementById('banner-light');
-	
+	const banner = document.getElementById("banner");
+	const bannerLight = document.getElementById("banner-light");
+
 	if (!banner) {
 		// 如果元素还没加载，延迟执行
 		setTimeout(updateBannerForTheme, 100);
 		return;
 	}
-	
-	const isDark = document.documentElement.classList.contains('dark');
-	
+
+	const isDark = document.documentElement.classList.contains("dark");
+
 	// 移除所有可能影响显示的类
-	banner.classList.remove('opacity-0', 'scale-105');
+	banner.classList.remove("opacity-0", "scale-105");
 	if (bannerLight) {
-		bannerLight.classList.remove('opacity-0', 'scale-105');
+		bannerLight.classList.remove("opacity-0", "scale-105");
 	}
-	
+
 	// 使用 CSS 变量 + 内联样式双重保障
 	if (isDark) {
 		// 暗色主题：显示暗色背景图，隐藏浅色背景图
-		banner.style.setProperty('--banner-opacity', '1');
-		banner.style.setProperty('opacity', '1', 'important');
-		banner.style.opacity = '1';
-		banner.style.display = 'block';
+		banner.style.setProperty("--banner-opacity", "1");
+		banner.style.setProperty("opacity", "1", "important");
+		banner.style.opacity = "1";
+		banner.style.display = "block";
 		if (bannerLight) {
-			bannerLight.style.setProperty('--banner-opacity', '0');
-			bannerLight.style.setProperty('opacity', '0', 'important');
-			bannerLight.style.opacity = '0';
-			bannerLight.style.display = 'none';
+			bannerLight.style.setProperty("--banner-opacity", "0");
+			bannerLight.style.setProperty("opacity", "0", "important");
+			bannerLight.style.opacity = "0";
+			bannerLight.style.display = "none";
 		}
 	} else {
 		// 浅色主题：显示浅色背景图，隐藏暗色背景图
-		banner.style.setProperty('--banner-opacity', '0');
-		banner.style.setProperty('opacity', '0', 'important');
-		banner.style.opacity = '0';
-		banner.style.display = 'none';
+		banner.style.setProperty("--banner-opacity", "0");
+		banner.style.setProperty("opacity", "0", "important");
+		banner.style.opacity = "0";
+		banner.style.display = "none";
 		if (bannerLight) {
-			bannerLight.style.setProperty('--banner-opacity', '1');
-			bannerLight.style.setProperty('opacity', '1', 'important');
-			bannerLight.style.opacity = '1';
-			bannerLight.style.display = 'block';
-			console.log('🟢 Banner light should be visible now');
+			bannerLight.style.setProperty("--banner-opacity", "1");
+			bannerLight.style.setProperty("opacity", "1", "important");
+			bannerLight.style.opacity = "1";
+			bannerLight.style.display = "block";
+			console.log("🟢 Banner light should be visible now");
 		} else {
-			console.error('🔴 banner-light element not found!');
+			console.error("🔴 banner-light element not found!");
 		}
 	}
 }

@@ -34,6 +34,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Format and lint code
+        run: |
+          pnpm format
+          pnpm lint
+
       - name: Set deployment env
         env:
           SECRET_BASE: ${{ secrets.BASE_PATH }}

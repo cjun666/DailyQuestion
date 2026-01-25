@@ -1,5 +1,5 @@
-import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
 import { formatDateToYYYYMMDD } from "./date-utils";
 
 /**
@@ -12,7 +12,11 @@ export async function getDailyQuestion(
 ): Promise<CollectionEntry<"daily-questions"> | null> {
 	const targetDate = date || new Date();
 	const dateString = formatDateToYYYYMMDD(targetDate);
-	const targetTime = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()).getTime();
+	const targetTime = new Date(
+		targetDate.getFullYear(),
+		targetDate.getMonth(),
+		targetDate.getDate(),
+	).getTime();
 
 	// 获取所有题目
 	const allQuestions = await getCollection("daily-questions", ({ data }) => {
@@ -28,13 +32,19 @@ export async function getDailyQuestion(
 	// 如果找不到当天的题目，找最近的题目（不超过指定日期）
 	if (!question && allQuestions.length > 0) {
 		const validQuestions = allQuestions.filter((q) => {
-			const questionTime = new Date(q.data.date.getFullYear(), q.data.date.getMonth(), q.data.date.getDate()).getTime();
+			const questionTime = new Date(
+				q.data.date.getFullYear(),
+				q.data.date.getMonth(),
+				q.data.date.getDate(),
+			).getTime();
 			return questionTime <= targetTime;
 		});
 
 		if (validQuestions.length > 0) {
 			// 按日期降序排序，取最近的
-			validQuestions.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+			validQuestions.sort(
+				(a, b) => b.data.date.getTime() - a.data.date.getTime(),
+			);
 			question = validQuestions[0];
 		}
 	}
@@ -50,6 +60,7 @@ export async function getAvailableQuestionDates(): Promise<Date[]> {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
 
-	return allQuestions.map((q) => q.data.date).sort((a, b) => b.getTime() - a.getTime());
+	return allQuestions
+		.map((q) => q.data.date)
+		.sort((a, b) => b.getTime() - a.getTime());
 }
-
