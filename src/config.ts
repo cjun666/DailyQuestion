@@ -41,7 +41,7 @@ export const siteConfig: SiteConfig = {
 };
 
 export const navBarConfig: NavBarConfig = {
-	links: [LinkPreset.Home],
+	links: [{ name: "研发规范", url: "/" }],
 };
 
 export const profileConfig: ProfileConfig = {
