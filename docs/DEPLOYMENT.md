@@ -7,8 +7,9 @@
 ### 方法一：使用 GitHub Actions（推荐）
 
 1. **启用 GitHub Pages**
-   - 进入仓库的 Settings → Pages
-   - Source 选择 "GitHub Actions"
+   - 进入仓库的 **Settings → Pages**
+   - **Source 必须选择 "GitHub Actions"**（不要选 "Deploy from a branch"，否则会 404）
+   - 若选错，站点会部署源码目录而非构建产物，根路径没有 `index.html`，就会出现 "File not found" / "does not contain the requested file"
 
 2. **配置 Secrets（可选）**
    - 进入 Settings → Secrets and variables → Actions，按需添加：
@@ -20,7 +21,8 @@
    - GitHub Actions 会自动构建并部署到 GitHub Pages
 
 4. **访问网站**
-   - 部署完成后，访问：`https://<你的用户名>.github.io/<仓库名>/`
+   - 部署完成后，访问：**`https://<你的用户名>.github.io/<仓库名>/`**
+   - **务必带上仓库名与尾部斜杠**。若访问 `https://<用户名>.github.io/`（用户站根路径），会 404，因为项目站部署在 `/<仓库名>/` 下。
 
 ### 方法二：手动部署
 
@@ -60,8 +62,17 @@
 2. 在托管平台配置域名解析
 3. 确保域名以 `/` 结尾（如 `https://example.com/`）
 
+## 常见 404 排查
+
+若出现 **"File not found" / "does not contain the requested file" / "provide an index.html"**：
+
+1. **Pages 来源**：Settings → Pages → Source 是否为 **"GitHub Actions"**？若为 "Deploy from a branch"，请改为 GitHub Actions。
+2. **访问地址**：是否访问 **`https://<用户名>.github.io/<仓库名>/`**（含仓库名与尾部 `/`）？不要访问 `https://<用户名>.github.io/`。
+3. **`.nojekyll`**：`public/.nojekyll` 会在构建时复制到 `dist`，用于禁用 Jekyll，否则 `_astro` 等目录会被忽略导致白屏/资源 404。确保该文件存在且未被删除。
+4. **Actions 日志**：Build 步骤是否通过？若 `dist/index.html` 缺失，需先解决构建问题。
+
 ## 注意事项
 
-- GitHub Pages 的 base path 如果仓库名不是 `fuwari`，需要设置为 `/<仓库名>/`
-- 确保 `trailingSlash` 设置为 `"always"` 以保持 URL 一致性
-- 构建前确保所有依赖都已安装
+- GitHub Pages 项目站的 base 自动为 `/<仓库名>/`，无需改仓库名。
+- 确保 `trailingSlash` 设置为 `"always"` 以保持 URL 一致性。
+- 构建前确保所有依赖都已安装。

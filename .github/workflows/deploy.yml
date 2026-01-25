@@ -34,12 +34,30 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Set deployment env
+        env:
+          SECRET_BASE: ${{ secrets.BASE_PATH }}
+          SECRET_SITE: ${{ secrets.SITE_URL }}
+        run: |
+          if [ -n "$SECRET_BASE" ]; then
+            echo "BASE_PATH=$SECRET_BASE" >> $GITHUB_ENV
+          else
+            echo "BASE_PATH=/${{ github.event.repository.name }}/" >> $GITHUB_ENV
+          fi
+          if [ -n "$SECRET_SITE" ]; then
+            echo "SITE_URL=$SECRET_SITE" >> $GITHUB_ENV
+          else
+            echo "SITE_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> $GITHUB_ENV
+          fi
+
       - name: Build with Astro
         run: pnpm build
-        env:
-          # 项目站必填：base = /仓库名/；若用 secrets.BASE_PATH（如自定义域名时为 /）则覆盖
-          BASE_PATH: ${{ secrets.BASE_PATH || format('/{0}/', github.event.repository.name) }}
-          SITE_URL: ${{ secrets.SITE_URL || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
+
+      - name: Verify build output
+        run: |
+          ls -la dist/
+          test -f dist/index.html || (echo "::error:: dist/index.html 缺失，构建输出异常" && exit 1)
+          echo "::notice:: 请访问 https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/ （务必包含仓库名与尾部斜杠，且 Pages 来源为 GitHub Actions）"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
