@@ -5,10 +5,8 @@ import type {
 	ProfileConfig,
 	SiteConfig,
 } from "./types/config";
-import { LinkPreset } from "./types/config";
-
 export const siteConfig: SiteConfig = {
-	title: "每日一题",
+	title: "研发规范",
 	subtitle: "提升编程技能",
 	lang: "zh_CN", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
 	themeColor: {
@@ -41,7 +39,7 @@ export const siteConfig: SiteConfig = {
 };
 
 export const navBarConfig: NavBarConfig = {
-	links: [{ name: "研发规范", url: "/" }],
+	links: [],
 };
 
 export const profileConfig: ProfileConfig = {

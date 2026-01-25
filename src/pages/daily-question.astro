@@ -2,7 +2,9 @@
 import DailyQuestionComponent from "@components/DailyQuestion.svelte";
 import Markdown from "@components/misc/Markdown.astro";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import AnsweredBadge from "@components/widget/AnsweredBadge.svelte";
 import { getDailyQuestion } from "@utils/question-utils";
+import { formatDateToYYYYMMDD } from "@utils/date-utils";
 import { Icon } from "astro-icon/components";
 
 const today = new Date();
@@ -13,28 +15,34 @@ if (!displayQuestion) {
 }
 
 const { Content } = await displayQuestion.render();
+const dateStr = formatDateToYYYYMMDD(displayQuestion.data.date);
 ---
 
 <MainGridLayout
 	title="每日一题"
 	description="每日一题 - 提升你的编程技能"
 >
-	<div class="w-full mt-[5.5rem] md:mt-[6rem]">
-		<div class="card-base px-6 md:px-9 pt-6 pb-6 md:pb-8 rounded-[var(--radius-large)] overflow-hidden relative mb-4">
-			<div class="flex items-center gap-3 mb-3 onload-animation">
-				<div
-					class="transition h-10 w-10 rounded-xl flex items-center justify-center bg-[var(--btn-regular-bg)] text-[var(--primary)]"
-					aria-hidden="true"
-				>
-					<Icon
-						name="material-symbols:quiz-outline-rounded"
-						class="text-2xl"
-					/>
+	<div class="w-full max-w-4xl mx-auto mt-[5.5rem] md:mt-[6rem] px-4 md:px-6">
+		<div class="question-card transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl rounded-[var(--radius-large)] mb-4">
+			<div class="card-base px-6 md:px-9 pt-6 pb-6 md:pb-8 rounded-[var(--radius-large)] overflow-hidden relative shadow-2xl border border-black/5 dark:border-white/10">
+				<div class="flex items-center justify-between gap-3 mb-3 onload-animation">
+					<div class="flex items-center gap-3">
+						<div
+							class="transition h-10 w-10 rounded-xl flex items-center justify-center bg-[var(--btn-regular-bg)] text-[var(--primary)]"
+							aria-hidden="true"
+						>
+							<Icon
+								name="material-symbols:quiz-outline-rounded"
+								class="text-2xl"
+							/>
+						</div>
+						<h1 class="text-2xl md:text-3xl font-bold text-90">
+							每日一题
+						</h1>
+					</div>
+					<!-- @ts-expect-error - client:load is Astro directive -->
+					<AnsweredBadge client:load dateStr={dateStr} />
 				</div>
-				<h1 class="text-2xl md:text-3xl font-bold text-90">
-					每日一题
-				</h1>
-			</div>
 			<div
 				class="text-sm text-50 mb-5 onload-animation"
 				style="animation-delay: calc(var(--content-delay) + 50ms);"
@@ -65,12 +73,13 @@ const { Content } = await displayQuestion.render();
 					explanationId="daily-explanation"
 				/>
 			</div>
+			</div>
 		</div>
 
-		<!-- 答案解析（提交后由 Svelte 组件通过 id 显示） -->
+		<!-- 答案解析（提交后由 Svelte 通过 id 显示） -->
 		<div
 			id="daily-explanation"
-			class="hidden card-base px-6 md:px-9 pt-6 pb-6 md:pb-8 rounded-[var(--radius-large)] overflow-hidden"
+			class="hidden card-base px-6 md:px-9 pt-6 pb-6 md:pb-8 rounded-[var(--radius-large)] overflow-hidden shadow-2xl border border-black/5 dark:border-white/10"
 		>
 			<div class="flex items-center gap-3 mb-4">
 				<div

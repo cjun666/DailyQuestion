@@ -1,7 +1,11 @@
 ---
 import DailyQuestionComponent from "@components/DailyQuestion.svelte";
 import Markdown from "@components/misc/Markdown.astro";
+import AnsweredBadge from "@components/widget/AnsweredBadge.svelte";
+import ProgressCalendar from "@components/widget/ProgressCalendar.svelte";
+import StatsPanel from "@components/widget/StatsPanel.svelte";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { formatDateToYYYYMMDD } from "@utils/date-utils";
 import { getDailyQuestion } from "@utils/question-utils";
 import { Icon } from "astro-icon/components";
 
@@ -13,28 +17,39 @@ if (!displayQuestion) {
 }
 
 const { Content } = await displayQuestion.render();
+const dateStr = formatDateToYYYYMMDD(displayQuestion.data.date);
 ---
 
 <MainGridLayout
 	title="每日一题"
 	description="每日一题 - 提升你的编程技能"
 >
-	<div class="w-full max-w-4xl mx-auto relative z-50 mt-[5.5rem] md:mt-[6rem]">
-		<div class="card-base px-6 md:px-9 pt-6 pb-6 md:pb-8 rounded-[var(--radius-large)] overflow-hidden relative mb-4 backdrop-blur-md bg-[var(--card-bg)]/90 dark:bg-[var(--card-bg)]/85 shadow-2xl border border-black/5 dark:border-white/10 z-50">
-			<div class="flex items-center gap-3 mb-2 onload-animation">
+	<div class="w-full max-w-6xl mx-auto relative z-50 mt-[5.5rem] md:mt-[6rem] px-4 md:px-6">
+		<div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 lg:gap-8">
+			<div class="min-w-0">
+				<!-- 题目卡片：悬停上浮+阴影，已完成徽章 -->
 				<div
-					class="transition h-10 w-10 rounded-xl flex items-center justify-center bg-[var(--btn-regular-bg)] text-[var(--primary)]"
-					aria-hidden="true"
+					class="question-card group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl rounded-[var(--radius-large)] mb-4"
 				>
-					<Icon
-						name="material-symbols:quiz-outline-rounded"
-						class="text-2xl"
-					/>
-				</div>
-				<h1 class="text-2xl md:text-3xl font-bold text-90">
-					每日一题
-				</h1>
-			</div>
+					<div class="card-base px-6 md:px-9 pt-6 pb-6 md:pb-8 rounded-[var(--radius-large)] overflow-hidden relative backdrop-blur-md bg-[var(--card-bg)]/90 dark:bg-[var(--card-bg)]/85 shadow-2xl border border-black/5 dark:border-white/10 z-50">
+						<div class="flex items-center justify-between gap-3 mb-2 onload-animation">
+							<div class="flex items-center gap-3">
+								<div
+									class="transition h-10 w-10 rounded-xl flex items-center justify-center bg-[var(--btn-regular-bg)] text-[var(--primary)]"
+									aria-hidden="true"
+								>
+									<Icon
+										name="material-symbols:quiz-outline-rounded"
+										class="text-2xl"
+									/>
+								</div>
+								<h1 class="text-2xl md:text-3xl font-bold text-90">
+									每日一题
+								</h1>
+							</div>
+							<!-- @ts-expect-error - client:load is Astro directive -->
+							<AnsweredBadge client:load dateStr={dateStr} />
+						</div>
 			<div
 				class="text-sm text-50 mb-4 onload-animation"
 				style="animation-delay: calc(var(--content-delay) + 50ms);"
@@ -65,30 +80,41 @@ const { Content } = await displayQuestion.render();
 					explanationId="daily-explanation"
 				/>
 			</div>
-		</div>
-
-		<!-- 答案解析（提交后由 Svelte 组件通过 id 显示） -->
-		<div
-			id="daily-explanation"
-			class="hidden card-base px-6 md:px-9 pt-6 pb-6 md:pb-8 rounded-[var(--radius-large)] overflow-hidden backdrop-blur-md bg-[var(--card-bg)]/90 dark:bg-[var(--card-bg)]/85 shadow-2xl border border-black/5 dark:border-white/10 relative z-50"
-		>
-			<div class="flex items-center gap-3 mb-4">
-				<div
-					class="transition h-9 w-9 rounded-lg flex items-center justify-center bg-[var(--btn-regular-bg)] text-[var(--primary)]"
-					aria-hidden="true"
-				>
-					<Icon
-						name="material-symbols:lightbulb-outline-rounded"
-						class="text-xl"
-					/>
+					</div>
 				</div>
-				<h2 class="text-xl md:text-2xl font-bold text-90">
-					答案解析
-				</h2>
+
+				<!-- 答案解析（提交后由 Svelte 通过 id 显示，可折叠） -->
+				<div
+					id="daily-explanation"
+					class="hidden card-base px-6 md:px-9 pt-6 pb-6 md:pb-8 rounded-[var(--radius-large)] overflow-hidden backdrop-blur-md bg-[var(--card-bg)]/90 dark:bg-[var(--card-bg)]/85 shadow-2xl border border-black/5 dark:border-white/10 relative z-50 transition-all duration-300"
+				>
+					<div class="flex items-center gap-3 mb-4">
+						<div
+							class="transition h-9 w-9 rounded-lg flex items-center justify-center bg-[var(--btn-regular-bg)] text-[var(--primary)]"
+							aria-hidden="true"
+						>
+							<Icon
+								name="material-symbols:lightbulb-outline-rounded"
+								class="text-xl"
+							/>
+						</div>
+						<h2 class="text-xl md:text-2xl font-bold text-90">
+							答案解析
+						</h2>
+					</div>
+					<Markdown class="custom-md text-75 prose dark:prose-invert !max-w-none">
+						<Content />
+					</Markdown>
+				</div>
 			</div>
-			<Markdown class="custom-md text-75 prose dark:prose-invert !max-w-none">
-				<Content />
-			</Markdown>
+
+			<!-- 侧边：本月进度 + 答题统计（桌面右侧，小屏时在下方） -->
+			<aside class="space-y-4 order-last lg:order-none">
+				<!-- @ts-expect-error - client:load is Astro directive -->
+				<ProgressCalendar client:load />
+				<!-- @ts-expect-error - client:load is Astro directive -->
+				<StatsPanel client:load />
+			</aside>
 		</div>
 	</div>
 </MainGridLayout>
