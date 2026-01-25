@@ -49,15 +49,51 @@ jobs:
           else
             echo "SITE_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> $GITHUB_ENV
           fi
+          echo "配置的环境变量:"
+          echo "  BASE_PATH=$BASE_PATH"
+          echo "  SITE_URL=$SITE_URL"
 
       - name: Build with Astro
         run: pnpm build
 
+      - name: Ensure .nojekyll exists
+        run: |
+          if [ ! -f "dist/.nojekyll" ]; then
+            echo "创建 .nojekyll 文件（禁用 Jekyll 处理）"
+            touch dist/.nojekyll
+          fi
+
       - name: Verify build output
         run: |
-          ls -la dist/
-          test -f dist/index.html || (echo "::error:: dist/index.html 缺失，构建输出异常" && exit 1)
-          echo "::notice:: 请访问 https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/ （务必包含仓库名与尾部斜杠，且 Pages 来源为 GitHub Actions）"
+          echo "=== 检查构建输出 ==="
+          echo "BASE_PATH: $BASE_PATH"
+          echo "SITE_URL: $SITE_URL"
+          echo ""
+          echo "=== dist/ 根目录内容 ==="
+          ls -la dist/ | head -20
+          echo ""
+          echo "=== 检查关键文件 ==="
+          if [ ! -f "dist/index.html" ]; then
+            echo "::error:: dist/index.html 缺失！"
+            echo "dist/ 目录内容："
+            find dist -maxdepth 2 -type f -name "*.html" | head -10
+            exit 1
+          fi
+          echo "✓ dist/index.html 存在"
+          if [ ! -f "dist/.nojekyll" ]; then
+            echo "::warning:: dist/.nojekyll 缺失，可能导致 _astro 目录被忽略"
+          else
+            echo "✓ dist/.nojekyll 存在"
+          fi
+          if [ ! -d "dist/_astro" ]; then
+            echo "::warning:: dist/_astro 目录不存在，资源可能无法加载"
+          else
+            echo "✓ dist/_astro 目录存在"
+            ls dist/_astro | head -5
+          fi
+          echo ""
+          echo "::notice:: 部署后将访问: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          echo "::notice:: 请确保 Settings → Pages → Source 设置为 'GitHub Actions'"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
