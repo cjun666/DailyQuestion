@@ -37,10 +37,9 @@ jobs:
       - name: Build with Astro
         run: pnpm build
         env:
-          # 如果使用 GitHub Pages，site URL 应该是 https://<username>.github.io/<repository>/
-          # 或者如果使用自定义域名，设置为你的域名
-          # 如果设置了 secrets.SITE_URL，则使用它；否则自动生成 GitHub Pages URL
-          SITE_URL: ${{ secrets.SITE_URL || 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/' }}
+          # 项目站必填：base = /仓库名/；若用 secrets.BASE_PATH（如自定义域名时为 /）则覆盖
+          BASE_PATH: ${{ secrets.BASE_PATH || format('/{0}/', github.event.repository.name) }}
+          SITE_URL: ${{ secrets.SITE_URL || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

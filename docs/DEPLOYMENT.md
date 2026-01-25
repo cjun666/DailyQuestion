@@ -10,13 +10,10 @@
    - 进入仓库的 Settings → Pages
    - Source 选择 "GitHub Actions"
 
-2. **配置 Site URL（可选）**
-   - 如果仓库名不是 `fuwari`，需要设置环境变量：
-     - 进入 Settings → Secrets and variables → Actions
-     - 添加新的 repository secret：
-       - Name: `SITE_URL`
-       - Value: `https://<你的用户名>.github.io/<仓库名>/`
-   - 如果使用自定义域名，设置为你的域名
+2. **配置 Secrets（可选）**
+   - 进入 Settings → Secrets and variables → Actions，按需添加：
+   - `SITE_URL`：站点地址。未设置时默认为 `https://<用户名>.github.io/<仓库名>/`；自定义域名时设为 `https://你的域名/`。
+   - `BASE_PATH`：仅在使用自定义域名且站点在根路径时设置，Value 填 `/`。未设置时自动为 `/<仓库名>/`（项目站必须如此，否则会出现 “does not contain the requested file” / 缺 `index.html`）。
 
 3. **推送代码**
    - 将代码推送到 `main` 分支
