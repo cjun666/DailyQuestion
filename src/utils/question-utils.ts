@@ -1,16 +1,16 @@
 import type { CollectionEntry } from "astro:content";
 import { getCollection } from "astro:content";
-import { formatDateToYYYYMMDD } from "./date-utils";
+import { formatDateToYYYYMMDD, getTodayInChinaTimeZone } from "./date-utils";
 
 /**
  * 根据日期获取对应的每日一题
- * @param date 日期对象，如果不提供则使用当前日期
+ * @param date 日期对象，如果不提供则使用当前日期（中国时区）
  * @returns 返回对应日期的题目，如果没有找到则返回最近的题目（不超过指定日期）
  */
 export async function getDailyQuestion(
 	date?: Date,
 ): Promise<CollectionEntry<"daily-questions"> | null> {
-	const targetDate = date || new Date();
+	const targetDate = date || getTodayInChinaTimeZone();
 	const dateString = formatDateToYYYYMMDD(targetDate);
 	const targetTime = new Date(
 		targetDate.getFullYear(),

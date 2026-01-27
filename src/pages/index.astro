@@ -5,11 +5,11 @@ import AnsweredBadge from "@components/widget/AnsweredBadge.svelte";
 import ProgressCalendar from "@components/widget/ProgressCalendar.svelte";
 import StatsPanel from "@components/widget/StatsPanel.svelte";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { formatDateToYYYYMMDD } from "@utils/date-utils";
+import { formatDateToYYYYMMDD, getTodayInChinaTimeZone } from "@utils/date-utils";
 import { getDailyQuestion } from "@utils/question-utils";
 import { Icon } from "astro-icon/components";
 
-const today = new Date();
+const today = getTodayInChinaTimeZone();
 let displayQuestion = await getDailyQuestion(today);
 
 if (!displayQuestion) {

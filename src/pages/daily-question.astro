@@ -4,10 +4,10 @@ import Markdown from "@components/misc/Markdown.astro";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import AnsweredBadge from "@components/widget/AnsweredBadge.svelte";
 import { getDailyQuestion } from "@utils/question-utils";
-import { formatDateToYYYYMMDD } from "@utils/date-utils";
+import { formatDateToYYYYMMDD, getTodayInChinaTimeZone } from "@utils/date-utils";
 import { Icon } from "astro-icon/components";
 
-const today = new Date();
+const today = getTodayInChinaTimeZone();
 let displayQuestion = await getDailyQuestion(today);
 
 if (!displayQuestion) {
