@@ -182,5 +182,5 @@
 			</div>
 			<div class="custom-md text-75 prose dark:prose-invert !max-w-none" set:html={explanationHtml} />
 		</div>
-	{/if}
-</div>
+	</div>
+{/if}
